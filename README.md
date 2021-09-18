@@ -1,2 +1,2 @@
 # SEMRflexmix
-Extending EM Algorithm for Sequential Estimation for Mixture of Regression Models from R package flexmix.
+A sequential EM Algorithm for Mixture of Regression Models, developed on the basis of R package flexmix.
