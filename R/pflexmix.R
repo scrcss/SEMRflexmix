@@ -137,6 +137,7 @@ setMethod("Pflexmix",
             model <- lapply(model, FLXcheckComponent, k, cluster)
             k <- unique(unlist(sapply(model, FLXgetK, k)))
             if (length(k) > 1) stop("number of clusters not specified correctly")
+            if (k > 2) stop("the number of clusters must be 2")
             
             model <- lapply(model, FLXgetModelmatrix, data, formula)
             

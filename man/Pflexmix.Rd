@@ -23,7 +23,7 @@ Pflexmix(formula, data = list(), k = NULL, cluster = NULL,
     general form is \code{y~x} where \code{y} is the response,
     \code{x} the set of predictors for repeated measurements.}
   \item{data}{An optional data frame containing the variables in the model.}
-  \item{k}{Number of clusters (not needed if \code{cluster} is specified).}
+  \item{k}{Number of clusters, k must be 2 which presented the parameteric part and non-parameteric part seperately.}
   \item{cluster}{Either a matrix with \code{k} columns of initial
     cluster membership probabilities for each observation; or a factor
     or integer vector with the initial cluster
@@ -51,7 +51,8 @@ Pflexmix(formula, data = list(), k = NULL, cluster = NULL,
   list of \code{FLXM} objects.
 }
 \value{
-  Returns an object of class \code{Pflexmix}.
+  Returns an object of class \code{Pflexmix}. The containing is the same as an object of class \code{flexmix} except \code{SIGMA} 
+which present the variance estimation of the parameters estiomation.
 }
 \author{Cyan Yu}
 \references{
