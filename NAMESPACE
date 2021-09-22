@@ -69,7 +69,8 @@ export(
        "stepFlexmix",
         "stepPFlexmix",
         "Pflexmix",
-         "FLXMRParticalglm"
+         "FLXMRParticalglm"，
+       "rec_stepPflexmix"
        )
 
 
