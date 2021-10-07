@@ -25,7 +25,7 @@ rec_stepPFlexmix <- function(x, y, z, min.comp=10, max.coef = 10, try.times = 5,
     flag.err = F
     while((singular!=0)|invalid.est){
       try.init = try.init + 1
-      res[[k]] = try(stepPFlexmix(y~1,k = 2,model=Model,concomitant = conModel,data=dataFrame, weights = W, control = mycont, nrep = 3, unique = T))   # 若遇到错误呢
+      res[[k]] = try(stepPFlexmix(y~1,model=Model,concomitant = conModel,data=dataFrame, weights = W, control = mycont, nrep = 3, unique = T))   # 若遇到错误呢
       if("try-error" %in% class(res[[k]])){
         flag.err = T
         res[[k]] = NULL

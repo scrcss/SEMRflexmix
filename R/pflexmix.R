@@ -56,16 +56,16 @@ setMethod("FLXmstep", signature(model = "FLXMRParticalglm"),
             }
             else if(model@Wupdate == 2){
               N = nrow(model@y)
-              
+
               if(length(components[[1]]@df) == 0)  w = rep(1/N,N)
               else{
-                
+
                 logpostunscaled  = matrix(sapply(components, function(x) x@logLik(model@x, model@y)), nrow = nrow(model@y))
-                
+
                 postunscaled <- if (nrow(prior) > 1) logpostunscaled + log(prior)
                 else sweep(logpostunscaled, 2, log(prior), "+")
                 postunscaled <- exp(postunscaled)
-                
+
                 # update w
                 w = exp(logpostunscaled[, 1, drop = FALSE])/rowSums(postunscaled)
                 w = w/sum(w)
@@ -78,7 +78,7 @@ setMethod("FLXmstep", signature(model = "FLXMRParticalglm"),
                 KenerlW = 1/h * dnorm(as.matrix(dist(y)/h), 0, 1)
                 log(as.matrix(KenerlW) %*% para)
               }
-              
+
               new("FLXcomponent",
                   parameters=list(w = para),
                   logLik=logLik,
@@ -90,7 +90,7 @@ setMethod("FLXmstep", signature(model = "FLXMRParticalglm"),
           })
 
 setGeneric("Pflexmix",
-           function(formula, data=list(), k=NULL,
+           function(formula, data=list(),
                     cluster=NULL, model=NULL, concomitant=NULL, control=NULL,
                     weights = NULL)
              standardGeneric("Pflexmix"))
@@ -98,11 +98,11 @@ setGeneric("Pflexmix",
 ## The following two methods only fill in and rearrange the model argument
 setMethod("Pflexmix",
           signature(formula = "formula", model="missing"),
-          function(formula, data=list(), k=NULL, cluster=NULL,
+          function(formula, data=list(), cluster=NULL,
                    model=NULL, concomitant=NULL, control=NULL, weights=NULL)
           {
             mycall = match.call()
-            z <- Pflexmix(formula=formula, data=data, k=k, cluster=cluster,
+            z <- Pflexmix(formula=formula, data=data, cluster=cluster,
                           model=list(FLXMRglm()), concomitant=concomitant,
                           control=control, weights = weights)
             z@call <- mycall
@@ -111,11 +111,11 @@ setMethod("Pflexmix",
 
 setMethod("Pflexmix",
           signature(formula = "formula", model="FLXMRParticalglm"),
-          function(formula, data=list(), k=NULL, cluster=NULL,
+          function(formula, data=list(), cluster=NULL,
                    model=NULL, concomitant=NULL, control=NULL, weights=NULL)
           {
             mycall = match.call()
-            z <- Pflexmix(formula=formula, data=data, k=k, cluster=cluster,
+            z <- Pflexmix(formula=formula, data=data, cluster=cluster,
                           model=list(model), concomitant=concomitant,
                           control=control, weights=weights)
             z@call <- mycall
@@ -126,48 +126,49 @@ setMethod("Pflexmix",
 ## This is the real thing
 setMethod("Pflexmix",
           signature(formula = "formula", model="list"),
-          function(formula, data=list(), k=NULL, cluster=NULL,
+          function(formula, data=list(), cluster=NULL,
                    model=NULL, concomitant=NULL, control=NULL, weights=NULL)
           {
             mycall = match.call()
             control = as(control, "FLXcontrol")
+            k = 2
             if (!is(concomitant, "FLXP")) concomitant <- FLXPconstant()
-            
+
             groups <- .FLXgetGrouping(formula, data)
             model <- lapply(model, FLXcheckComponent, k, cluster)
             k <- unique(unlist(sapply(model, FLXgetK, k)))
             if (length(k) > 1) stop("number of clusters not specified correctly")
             if (k > 2) stop("the number of clusters must be 2")
-            
+
             model <- lapply(model, FLXgetModelmatrix, data, formula)
-            
+
             groups$groupfirst <-
               if (length(groups$group)) groupFirst(groups$group)
             else rep(TRUE, FLXgetObs(model[[1]]))
-            
+
             if (is(weights, "formula")) {
               weights <- model.frame(weights, data = data, na.action = NULL)[,1]
             }
-            
+
             ## if weights and grouping is specified the weights within each
             ## group need to be the same
             if (!is.null(weights) & length(groups$group)>0) {
               unequal <- tapply(weights, groups$group, function(x) length(unique(x)) > 1)
               if (any(unequal)) stop("identical weights within groups needed")
             }
-            
+
             postunscaled <- initPosteriors(k, cluster, FLXgetObs(model[[1]]), groups)
-            
+
             if (ncol(postunscaled) == 1L)
               concomitant <- FLXPconstant()
-            
+
             concomitant <- FLXgetModelmatrix(concomitant, data = data,
                                              groups = groups)
-            
-            
+
+
             z <- PFLXfit(model=model, concomitant=concomitant, control=control,
                          postunscaled=postunscaled, groups=groups, weights = weights)
-            
+
             z@formula = formula
             z@call = mycall
             z@k0 = as.integer(k)
@@ -194,10 +195,10 @@ setMethod("PFLXfit", signature(model="list"),
             group <- groups$group
             groupfirst <- groups$groupfirst
             if(length(group)>0) postunscaled <- groupPosteriors(postunscaled, group)
-            
+
             logpostunscaled <- log(postunscaled)
             postscaled <- exp(logpostunscaled - log_row_sums(logpostunscaled))
-            
+
             llh <- -Inf
             if (control@classify %in% c("SEM", "random")) llh.max <- -Inf
             converged <- FALSE
@@ -211,7 +212,7 @@ setMethod("PFLXfit", signature(model="list"),
                               group, groupfirst)
               else ungroupPriors(concomitant@fit(concomitant@x, (postscaled/weights)[groupfirst & weights > 0,,drop=FALSE], weights[groupfirst & weights > 0]),
                                  group, groupfirst)
-              
+
               components <- lapply(seq_along(model), function(i) FLXmstep(model[[i]], postscaled, components[[i]], prior))
               postunscaled <- matrix(0, nrow = N, ncol = k)
               for (n in seq_along(model))
@@ -236,7 +237,7 @@ setMethod("PFLXfit", signature(model="list"),
                 postscaled[index,] <- if(nrow(prior)==1) rep(prior, each = length(index)) else prior[index,]
                 postunscaled[index,] <- .Machine$double.xmin
               }
-              
+
               if (any(is.na(postscaled))) {
                 # browser()
                 model <- lapply(model,function(x) {
@@ -251,7 +252,7 @@ setMethod("PFLXfit", signature(model="list"),
                 if (is.null(weights)) which(colSums(postscaled[groupfirst,,drop=FALSE]) < control@minprior)
                 else which(colSums(postscaled[groupfirst,] * weights[groupfirst]) < control@minprior)
               }
-              
+
               if(length(nok)){
                 # browser()
                 model <- lapply(model,function(x) {
@@ -260,7 +261,7 @@ setMethod("PFLXfit", signature(model="list"),
                 })
                 break
               }
-              
+
               llh.old <- llh
               llh <- if (is.null(weights)) sum(log_row_sums(logpostunscaled[groupfirst,,drop=FALSE]))
               else sum(log_row_sums(logpostunscaled[groupfirst,,drop=FALSE])*weights[groupfirst])
@@ -289,7 +290,7 @@ setMethod("PFLXfit", signature(model="list"),
               if(control@verbose && (iter%%control@verbose==0))
                 printIter(iter, llh)
             }
-            
+
             # var = T
             # calculate the variance of the paramater estimations
             # browser()
@@ -306,7 +307,7 @@ setMethod("PFLXfit", signature(model="list"),
               temp_cal = (model[[1]]@y - model[[1]]@x %*% beta)
               f_diff = cbind(c(f[, 2] * temp_cal / (sigma^2)) * model[[1]]@x,
                              c(f[, 2] * (-1/sigma +temp_cal^2/(sigma^3))))
-              
+
               h = bw.nrd0(model[[1]]@y)
               KenerlW = 1/h * dnorm(as.matrix(dist(model[[1]]@y)/h), 0, 1)
               w = components[[1]][[1]]@parameters$w
@@ -326,7 +327,7 @@ setMethod("PFLXfit", signature(model="list"),
                 Fi = Fi +  theta %*% t(theta)
               }
               Fi = Fi/N
-              
+
               # V
               f_hessian = matrix(0, p + 1, p+1)
               V = matrix(0, p+1, p+1)
@@ -335,18 +336,18 @@ setMethod("PFLXfit", signature(model="list"),
                 f_hessian[1:p, 1:p] <- f[i, 2]*(temp_cal[i]^2 / sigma^4 - 1/sigma^2) * (model[[1]]@x[i, ] %*% t(model[[1]]@x[i, ]))
                 f_hessian[1:p, p + 1] <- f[i, 2]*(-3*temp_cal[i]/sigma^3 + temp_cal[i]^3/sigma^5)* model[[1]]@x[i, ]
                 f_hessian[p+1, 1:p] <- f_hessian[1:p, p + 1]
-                
+
                 f_hessian[p+1, p+1] <- f[i, 2] * (2/sigma^2 - 5*temp_cal[i]^2/sigma^4 + temp_cal[i]^4/sigma^6)
-                
+
                 V = V + (f_hessian/sum(f[i, ]) - S1[i, ] %*% t(S1[i, ]))
               }
               V = V/N
-              
+
               SIGMA = solve(V) %*% Fi %*% solve(V)
               SIGMA = SIGMA/N
             }else
               SIGMA = matrix(NA, 1, 1)
-            
+
             ### Construct return object
             if (control@classify=="random") {
               components <- components.max
@@ -356,7 +357,7 @@ setMethod("PFLXfit", signature(model="list"),
               llh <- llh.max
               iter <- control@iter.max - iter.rm
             }
-            
+
             components <- lapply(seq_len(k), function(i) lapply(components, function(x) x[[i]]))
             names(components) <- paste("Comp", seq_len(k), sep=".")
             cluster <- max.col(postscaled)
@@ -367,7 +368,7 @@ setMethod("PFLXfit", signature(model="list"),
             control@nrep <- 1
             prior <- if (is.null(weights)) colMeans(postscaled[groupfirst,,drop=FALSE])
             else colSums(postscaled[groupfirst,,drop=FALSE] * weights[groupfirst])/sum(weights[groupfirst])
-            
+
             retval <- new("Pflexmix", model=model, prior=prior,
                           posterior=list(scaled=postscaled,
                                          unscaled=postunscaled),
@@ -380,4 +381,3 @@ setMethod("PFLXfit", signature(model="list"),
                           SIGMA = SIGMA)
             retval
           })
-

@@ -33,6 +33,9 @@ and their pharmacologic response. Because of the potential heterogeneity of pati
 \source{
 Li, Q., Shi, R., and Liang, F. (2019). Drug sensitivity prediction with high-dimensional
 mixture regression.  \emph{PLOS one}, 14(2):e0212108.
+
+  You, Na; Yu, Qingyun; Wang, Xueqin; Dai, Hongsheng. Sequential Estimation for Mixture of Regression Models in Dealing with
+Heterogeneous Population. Submitted.
 }
 
 \examples{
@@ -47,6 +50,6 @@ Model <- FLXMRParticalglm(as.formula(paste0('~',paste(colnames(x),collapse = '+'
 
 conModel <- FLXPmultinom(as.formula(paste0('~',paste(colnames(z),collapse = '+'))))
 
-Pflx <- stepPFlexmix(y~1,k = 2,model=Model,concomitant = conModel,data=DF, nrep = 3, unique = T)
+Pflx <- stepPFlexmix(y~1,model=Model,concomitant = conModel,data=DF, nrep = 3, unique = T)
 }
 \keyword{datasets}
