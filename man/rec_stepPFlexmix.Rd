@@ -16,10 +16,10 @@ rec_stepPFlexmix(x, y, z, min.comp=10, max.coef = 10, try.times = 5, Wupdate = 1
   \item{x}{A matrix or dataframe of regression varibales.}
   \item{y}{A vector presents the respose in the regression modle.}
   \item{z}{A matrix or dataframe of concomitant variables.}
-  \item{min.comp}{The minimum of the sample size that remains in the non-parametric part to stop the sequentiak algorithm.}  
-  \item{max.coef}{The maximun paramet estimation that we can accept otherwise we will restart the algorithm for we think the algorithm has reach at a boundary point.}
+  \item{min.comp}{The minimum of the sample size that remains in the non-parametric part to stop the sequential algorithm.}  
+  \item{max.coef}{The maximum parameter estimation that we can accept otherwise we will restart the algorithm for we think the algorithm has reach at a boundary point.}
   \item{try.times}{If the algortithm reach at a boundary point we will restart the alogorithm no more than \code{try.times} times.}
-  \item{Wupdate}{We provide 2 ways to update the M-step control the code by Wupade = 1/2.}
+  \item{Wupdate}{We provide 2 ways to update the M-step by controling the code by Wupade equal to 1 or 2.}
 }
 \details{
   Function rec_stepPFlexmix is a sequential analysis procedure based on a mixture model with two components.  Every parition is  a \code{\link{stepPFlexmix}}.

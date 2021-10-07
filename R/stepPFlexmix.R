@@ -1,4 +1,3 @@
-
 setClass("stepPFlexmix",
          representation(models="list",
                         k="integer",
@@ -8,12 +7,13 @@ setClass("stepPFlexmix",
 
 
 
-stepPFlexmix <- function(..., k=NULL, nrep=3, verbose=TRUE, drop=TRUE,
-                        unique=FALSE)
+stepPFlexmix <- function(..., nrep=3, verbose=TRUE, drop=TRUE,
+                         unique=FALSE)
 {
   MYCALL <- match.call()
   MYCALL1 <- MYCALL
-  
+
+  k = 2
   bestFlexmix <- function(...)
   {
     z = new("Pflexmix", logLik=-Inf)
@@ -29,7 +29,7 @@ stepPFlexmix <- function(..., k=NULL, nrep=3, verbose=TRUE, drop=TRUE,
     }
     return(list(z = z, logLiks = logLiks))
   }
-  
+
   z = list()
   if(is.null(k)){
     RET = bestFlexmix(...)
@@ -46,7 +46,7 @@ stepPFlexmix <- function(..., k=NULL, nrep=3, verbose=TRUE, drop=TRUE,
     for(n in seq_along(k)){
       ns <- as.character(k[n])
       if(verbose) cat(k[n], ":")
-      RET <- bestFlexmix(..., k=k[n])
+      RET <- bestFlexmix(...)
       z[[ns]] = RET$z
       logLiks[n,] <- RET$logLiks
       MYCALL1[["k"]] <- as.numeric(k[n])
@@ -59,7 +59,7 @@ stepPFlexmix <- function(..., k=NULL, nrep=3, verbose=TRUE, drop=TRUE,
   z <- z[is.finite(sapply(z, logLik))]
   rownames(logLiks) <- names(z)
   if (!length(z)) stop("no convergence to a suitable mixture")
-  
+
   if(drop & (length(z)==1)){
     return(z[[1]])
   }
@@ -84,7 +84,7 @@ setMethod("unique", "stepPFlexmix",
             K <- sapply(x@models, function(x) x@k)
             logLiks <- x@logLiks
             keep <- rep(TRUE, nrow(logLiks))
-            
+
             for(k in sort(unique(K))){
               n <- which(k==K)
               if(length(n)>1){
@@ -100,7 +100,7 @@ setMethod("unique", "stepPFlexmix",
             attr(logLiks, "na.action") <- NULL
             mycall <- x@call
             mycall["unique"] <- TRUE
-            
+
             return(new("stepPFlexmix",
                        models=z,
                        k=as.integer(names(z)),
@@ -124,7 +124,7 @@ setMethod("logLik", "stepPFlexmix",
 
 
 setMethod("nobs", signature(object="Pflexmix"),
-          function(object, ...) {          
+          function(object, ...) {
             if (is.null(object@weights)) nrow(object@posterior$scaled) else  sum(object@weights)
           })
 
